@@ -1,0 +1,116 @@
+package com.example.barca.pengogame;
+import java.util.Random;
+
+/*******************************************************************************
+ * Třída {GameBoard} slouží k definování herní desky
+ *
+ * @author Bára Groňová
+ */
+public class GameBoard {
+
+    //Rozměry herní desky
+    private int xSize = 15;
+    private int ySize = 9;
+    private ID[][] board = new ID[xSize][ySize];
+    //Počet hráčů (1 nebo 0)
+    private int numOfP = 1;
+    //Počet Enemy
+    private int numOfEnemy;
+
+    /*******************************************************************************
+     * 	Vytvoří instanci a vygeneruje herní desku
+     */
+    public GameBoard(int level)
+    {
+        Random r = new Random();
+        for(int i = 0; i < xSize; i++)
+        {
+            for (int j = 0; j < ySize; j++)
+            {
+                if(i==0 || i== xSize-1) board[i][j] = ID.Wall;
+                else if (j == 0 || j == ySize-1) board[i][j] = ID.Wall;
+               else  if (r.nextInt(3) == 1) board[i][j] = ID.Ice;
+                else board[i][j] = ID.Empty;
+            }
+        }
+        int rX, rY;
+        for(int i = 0; i< level +3; i++ ) {
+
+            rX = r.nextInt(xSize-2)+1;
+            rY = r.nextInt(ySize-2)+1;
+
+            board[rX][rY] = ID.Enemyl;
+            this.numOfEnemy++;
+        }
+        //board[xSize-2][ySize-2] = ID.Player;
+        board[10][5] = ID.Player;
+    }
+    /*******************************************************************************
+     * @return xSize
+     */
+    public int getxSize() {
+        return this.xSize;
+    }
+    /*******************************************************************************
+     * @return ySize
+     */
+    public int getySize() {
+        return this.ySize;
+    }
+    /*******************************************************************************
+     * @param x x-ová souřadnice
+     * @param y y-ová souřadnice
+     * @return ID na dané pozici
+     */
+    public ID getAtPosition(int x, int y) {
+        return this.board[x][y];
+    }
+    /*******************************************************************************
+     * Nastaví dané ID na danou pozici herní desky
+     * @param x x-ová souřadnice
+     * @param y y-ová souřadnice
+     * @param id ID, které mábýt nastaveno
+     */
+    public void setAtPosition(int x, int y, ID id)
+    {
+        this.board[x][y] = id;
+    }
+
+    /*******************************************************************************
+     * @return pocet Hráčů (0/1)
+     */
+    public int getNumOfP() {
+        return this.numOfP;
+    }
+    /*******************************************************************************
+     * @return počet Enemy
+     */
+    public int getNumOfEnemy() {
+        return this.numOfEnemy;
+    }
+    /*******************************************************************************
+     * Nastaví počet hráčů na nulu
+     */
+    public void EraseP() {
+        this.numOfP = 0;
+    }
+    /*******************************************************************************
+     * Sníží počet Enemy o 1
+     */
+    public void EnemyDead() {
+        this.numOfEnemy --;
+    }
+
+    /*******************************************************************************
+     * Kontroluje herní desku
+     * @return 1 když již není žádný enemy
+     * @return -1 když byl zabit hráč
+     * @return 0 pokud neplatí ani jedno z výše uvedeného
+     */
+    public int checkBoard() {
+        if (this.numOfEnemy < 1) return 1;
+        if(this.numOfP == 0) return -1;
+        else return 0;
+    }
+
+}
