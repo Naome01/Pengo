@@ -8,8 +8,14 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Math.abs;
 
@@ -18,11 +24,13 @@ import static java.lang.Math.abs;
  *
  * @author Bára Groňová
  */
-public class GameView extends View{
+public class GameView extends SurfaceView implements SurfaceHolder.Callback{
 
     TextView enemyTex;
     TextView levelTex;
     TextView livesTex;
+    private GameThread gameThread;
+    private ArrayList<MovingObject> objects;
     Bitmap[] bmp;
 
     int lx = 20;
@@ -40,6 +48,7 @@ public class GameView extends View{
     float playerWorldX;
     float playerWorldY;
     boolean firstDown = false;
+    Canvas canvas;
 
     public GameView(Context context) {
         super(context);
@@ -57,19 +66,11 @@ public class GameView extends View{
     }
 
     void init(Context context) {
-        bmp = new Bitmap[7];
+        // Make Game Surface focusable so it can handle events. .
+        this.setFocusable(true);
 
-        bmp[0] = BitmapFactory.decodeResource(getResources(), R.drawable.empty);
-        bmp[1] = BitmapFactory.decodeResource(getResources(), R.drawable.wall);
-        bmp[2] = BitmapFactory.decodeResource(getResources(), R.drawable.enemyl);
-        bmp[3] = BitmapFactory.decodeResource(getResources(), R.drawable.enemyr);
-        bmp[4] = BitmapFactory.decodeResource(getResources(), R.drawable.ice);
-        bmp[5] = BitmapFactory.decodeResource(getResources(), R.drawable.icecrushed);
-        bmp[6] = BitmapFactory.decodeResource(getResources(), R.drawable.pengo);
-
-        board = new GameBoard(1);
-        lx = board.getxSize();
-        ly = board.getySize();
+        // Sét callback.
+        this.getHolder().addCallback(this);
 
         /*enemyTex = findViewById(R.id.enemyText);
         levelTex = findViewById(R.id.levelText);
@@ -77,6 +78,67 @@ public class GameView extends View{
         enemyTex.setText("x " + board.getNumOfEnemy());
         levelTex.setText("Level: 1");
         livesTex.setText("4 x");*/
+        //while(true) Log.d("TestLoop", "testing");
+    }
+    public void update()  {
+
+        for(int i =1; i< objects.size(); i++){
+            objects.get(i).Move(this,board);
+            if(objects.get(i).getID() == ID.Empty) objects.remove(i);
+        }
+        boolean secondDown = !objects.get(0).Move(this,board);
+        if(firstDown && secondDown) {
+            MovingObject player = (objects.get(0));
+            MovingObject ice = new MovingObject(player.getPosX()+player.getVelocityX(), player.getPosY()+player.getVelocityY(), player.getVelocityX(), player.getVelocityY(), ID.Ice);
+            objects.add(ice);
+        }
+        else firstDown = secondDown;
+
+        playerY = board.getPlayerY();
+        playerX = board.getPlayerX();
+
+       /* int tmp = board.checkBoard();
+        if (tmp == -1) {
+            this.gameThread.setRunning(false);
+            Log.d("Loop", "GAME OVER");
+            return;
+        }
+        else if(tmp == 1){
+            this.gameThread.setRunning(false);
+            Log.d("Loop", "WIN!!");
+            return;
+        }*/
+    }
+
+    public  boolean RemoveObject(int posX, int posY, ID id){
+        for(int i=0; i<objects.size(); i++){
+            if(objects.get(i).getPosX() == posX && objects.get(i).getPosY() == posY && objects.get(i).getID() == id){
+                objects.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public  boolean RemoveObject(MovingObject object){
+            objects.remove(object);
+
+        return false;
+    }
+    @Override
+    public void draw(Canvas canvas)  {
+        super.draw(canvas);
+
+        width = canvas.getWidth() /ly;
+        height = canvas.getHeight() /lx;
+        for (int i = 0; i < lx; i++) {
+            for (int j = 0; j < ly; j++) {
+
+                int id = ID.valueOf(board.getAtPosition(i,j).name()).ordinal();
+                canvas.drawBitmap(bmp[id], null,
+                        new Rect(j*width, i*height,(j+1)*width, (i+1)*height), null);
+            }
+        }
     }
 
     @Override
@@ -98,7 +160,6 @@ public class GameView extends View{
                 playerWorldY = (width * playerY) + (width/2);
 
                 ResolveDirection();
-                firstDown = true;
             break;
 
         }
@@ -136,96 +197,74 @@ public class GameView extends View{
 
     protected void MoveRight(){
         if(playerY < ly-1){
-        int nextX = playerX;
-        int nextY = playerY+1;
-        Move(nextX, nextY);}
+        objects.get(0).setVelocity(0, 1);
+        }
 
     }
 
     protected void MoveLeft(){
         if(playerY > 0) {
+            objects.get(0).setVelocity(0, -1);
 
-            int nextX = playerX;
-            int nextY = playerY - 1;
-            Move(nextX, nextY);
         }
     }
 
     protected void MoveUp(){
         if(playerX > 0) {
+            objects.get(0).setVelocity(-1, 0);
 
-            int nextX = playerX - 1;
-            int nextY = playerY;
-            Move(nextX, nextY);
         }
     }
     protected void MoveDown(){
         if(playerX < lx-1) {
+            objects.get(0).setVelocity(1, 0);
 
-            int nextX = playerX + 1;
-            int nextY = playerY;
-            Move(nextX, nextY);
         }
     }
-    protected void Move(int nextX, int nextY){
-        ID next = board.getAtPosition(nextX, nextY);
-        if( next == ID.Empty){
-            board.setAtPosition(playerX, playerY, ID.Empty);
-            playerX = nextX;
-            playerY = nextY;
-            board.setAtPosition(nextX, nextY, ID.Player);
 
-        }
 
-        else if(firstDown && next == ID.Ice){
-            int dirX = nextX - playerX;
-            int dirY = nextY - playerY;
-            MoveIce(nextX, nextY, dirX, dirY);
-            board.setAtPosition(playerX, playerY, ID.Empty);
-            playerX = nextX;
-            playerY = nextY;
-            board.setAtPosition(nextX, nextY, ID.Player);
-        }
-        invalidate(); //znovu zavola Draw a prekresli
-        firstDown = false;
-    }
-    protected void MoveIce(int actX, int actY, int dirX, int dirY){
-        int nextX = actX + dirX;
-        int nextY = actY + dirY;
-Log.d("MoveIce", "NextX: " +nextX + " NExtY: "+nextY);
-        ID next = board.getAtPosition(nextX, nextY);
-
-        if(next == ID.Ice || next == ID.Wall){
-            //board.setAtPosition(actX, actY, ID.Icecrushed);
-            return;
-        }
-        else if (next == ID.Empty) {
-            board.setAtPosition(actX, actY, ID.Empty);
-            board.setAtPosition(nextX, nextY, ID.Ice);
-
-        }
-        else if(next == ID.Enemyl || next == ID.Enemyr)
-        {
-            board.setAtPosition(actX, actY, ID.Empty);
-            board.setAtPosition(nextX, nextY, ID.Ice);
-            board.EnemyDead();
-            //enemyTex.setText("x " + board.getNumOfEnemy());
-
-        }
-        MoveIce(nextX, nextY, dirX, dirY) ;
-
-    }
     @Override
-    protected void onDraw(Canvas canvas) {
-        //Log.d("GameView", "Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" + xDown);
+    public void surfaceCreated(SurfaceHolder holder) {
+        bmp = new Bitmap[7];
 
-        for (int i = 0; i < lx; i++) {
-            for (int j = 0; j < ly; j++) {
-                int id = ID.valueOf(board.getAtPosition(i,j).name()).ordinal();
-                canvas.drawBitmap(bmp[id], null,
-                        new Rect(j*width, i*height,(j+1)*width, (i+1)*height), null);
+        bmp[0] = BitmapFactory.decodeResource(getResources(), R.drawable.empty);
+        bmp[1] = BitmapFactory.decodeResource(getResources(), R.drawable.wall);
+        bmp[2] = BitmapFactory.decodeResource(getResources(), R.drawable.enemyl);
+        bmp[3] = BitmapFactory.decodeResource(getResources(), R.drawable.enemyr);
+        bmp[4] = BitmapFactory.decodeResource(getResources(), R.drawable.ice);
+        bmp[5] = BitmapFactory.decodeResource(getResources(), R.drawable.icecrushed);
+        bmp[6] = BitmapFactory.decodeResource(getResources(), R.drawable.pengo);
+
+        board = new GameBoard(1);
+        lx = board.getxSize();
+        ly = board.getySize();
+        objects = new ArrayList<>();
+        objects = board.updateHandler(objects);
+
+        this.gameThread = new GameThread(this, holder);
+        this.gameThread.setRunning(true);
+        this.gameThread.start();
+
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        boolean retry= true;
+        while(retry) {
+            try {
+                this.gameThread.setRunning(false);
+
+                // Parent thread must wait until the end of GameThread.
+                this.gameThread.join();
+            }catch(InterruptedException e)  {
+                e.printStackTrace();
             }
+            retry= true;
         }
-
     }
 }

@@ -1,5 +1,8 @@
 package com.example.barca.pengogame;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
 
 /*******************************************************************************
  * Třída {GameBoard} slouží k definování herní desky
@@ -11,6 +14,8 @@ public class GameBoard {
     //Rozměry herní desky
     private int xSize = 15;
     private int ySize = 9;
+    private int playerX = 10;
+    private int playerY = 5;
     private ID[][] board = new ID[xSize][ySize];
     //Počet hráčů (1 nebo 0)
     private int numOfP = 1;
@@ -43,7 +48,7 @@ public class GameBoard {
             this.numOfEnemy++;
         }
         //board[xSize-2][ySize-2] = ID.Player;
-        board[10][5] = ID.Player;
+        board[playerX][playerY] = ID.Player;
     }
     /*******************************************************************************
      * @return xSize
@@ -111,6 +116,34 @@ public class GameBoard {
         if (this.numOfEnemy < 1) return 1;
         if(this.numOfP == 0) return -1;
         else return 0;
+    }
+
+    public int getPlayerX(){
+        return this.playerX;
+    }
+    public int getPlayerY(){
+        return this.playerY;
+    }
+
+    public void setPlayerX(int playerX) {
+        this.playerX = playerX;
+    }
+
+    public void setPlayerY(int playerY) {
+        this.playerY = playerY;
+    }
+
+    public ArrayList<MovingObject> updateHandler(ArrayList<MovingObject> list){
+        list.add(0, new MovingObject(playerX, playerY,
+                0,0,ID.Player)); // player have to be firts in list
+        for(int i = 0; i < xSize; i++)
+        {
+            for (int j = 0; j < ySize; j++) {
+                if(this.getAtPosition(i,j) == ID.Enemyl || this.getAtPosition(i,j) == ID.Enemyr )
+                list.add(new MovingObject(i, j, 0, 0, ID.Enemyl));
+            }
+        }
+        return list;
     }
 
 }
