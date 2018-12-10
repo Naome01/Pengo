@@ -1,21 +1,23 @@
 package com.example.barca.pengogame;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.Math.abs;
 
@@ -48,37 +50,32 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     float playerWorldX;
     float playerWorldY;
     boolean firstDown = false;
-    Canvas canvas;
 
     public GameView(Context context) {
         super(context);
-        init(context);
+        init();
     }
 
     public GameView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init();
     }
 
     public GameView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+        init();
     }
 
-    void init(Context context) {
+    void init() {
+        Log.d("TestLoop", "Init");
+
         // Make Game Surface focusable so it can handle events. .
         this.setFocusable(true);
 
         // Sét callback.
         this.getHolder().addCallback(this);
 
-        /*enemyTex = findViewById(R.id.enemyText);
-        levelTex = findViewById(R.id.levelText);
-        livesTex = findViewById(R.id.livesText);
-        enemyTex.setText("x " + board.getNumOfEnemy());
-        levelTex.setText("Level: 1");
-        livesTex.setText("4 x");*/
-        //while(true) Log.d("TestLoop", "testing");
+
     }
     public void update()  {
 
@@ -97,17 +94,24 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         playerY = board.getPlayerY();
         playerX = board.getPlayerX();
 
-       /* int tmp = board.checkBoard();
+        enemyTex.setText("x " + board.getNumOfEnemy());
+        levelTex.setText("Level: 1");
+        livesTex.setText("4 x");
+
+        int tmp = board.checkBoard();
         if (tmp == -1) {
+            Log.d("Win or Over", "GAME OVER");
+
             this.gameThread.setRunning(false);
-            Log.d("Loop", "GAME OVER");
             return;
         }
         else if(tmp == 1){
+            Log.d("Win or Over", "WIN!!");
+
             this.gameThread.setRunning(false);
-            Log.d("Loop", "WIN!!");
+
             return;
-        }*/
+        }
     }
 
     public  boolean RemoveObject(int posX, int posY, ID id){
@@ -125,6 +129,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
 
         return false;
     }
+
     @Override
     public void draw(Canvas canvas)  {
         super.draw(canvas);
@@ -240,6 +245,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         ly = board.getySize();
         objects = new ArrayList<>();
         objects = board.updateHandler(objects);
+
+        enemyTex = (TextView) ((Activity)getContext()).findViewById(R.id.enemyText);
+        ImageView lives = ((Activity)getContext()).findViewById(R.id.imageView2);
+        lives.setImageResource(R.drawable.hearth);
+
+        ImageView enemy = ((Activity)getContext()).findViewById(R.id.imageView);
+        enemy.setImageResource(R.drawable.enemyr);
+        levelTex = (TextView) ((Activity)getContext()).findViewById(R.id.levelText);
+        livesTex = (TextView) ((Activity)getContext()).findViewById(R.id.livesText);
+        enemyTex.setText("x " + board.getNumOfEnemy());
+        levelTex.setText("Level: 1");
+        livesTex.setText("4 x");
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);

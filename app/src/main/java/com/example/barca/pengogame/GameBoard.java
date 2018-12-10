@@ -12,8 +12,8 @@ import java.util.Random;
 public class GameBoard {
 
     //Rozměry herní desky
-    private int xSize = 15;
-    private int ySize = 9;
+    private int xSize = 20;
+    private int ySize = 13;
     private int playerX = 10;
     private int playerY = 5;
     private ID[][] board = new ID[xSize][ySize];
@@ -39,7 +39,7 @@ public class GameBoard {
             }
         }
         int rX, rY;
-        for(int i = 0; i< level +3; i++ ) {
+        for(int i = 0; i< level; i++ ) {
 
             rX = r.nextInt(xSize-2)+1;
             rY = r.nextInt(ySize-2)+1;
