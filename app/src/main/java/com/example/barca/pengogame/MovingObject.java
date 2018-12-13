@@ -12,7 +12,7 @@ public class MovingObject {
     private int speed;
     private ID id;
     private int counter;
-    private boolean eat;
+    private boolean firstMove;
 
     MovingObject(int posX, int posY, int velocityX, int velocityY, ID id){
         this.posX = posX;
@@ -25,12 +25,9 @@ public class MovingObject {
         else speed = 1;
         this.id = id;
         counter = 1;
-        eat = false;
+        firstMove = true;
     }
 
-    public void setEat(boolean eat) {
-        this.eat = eat;
-    }
 
     public void setPosition(int posX, int posY){
         this.posY = posY;
@@ -64,9 +61,7 @@ public class MovingObject {
             if(counter != 0 && counter%6 == 0)
             RandomVelocity();
             //Log.d("Enemy", "enemyRandom ");
-            else if(counter != 0 && counter%3 == 0){
-                eat = true;
-            }
+
         }
         int nextX = posX + velocityX;
         int nextY = posY + velocityY;
@@ -78,6 +73,7 @@ public class MovingObject {
             posY = nextY;
             board.setAtPosition(nextX, nextY, id);
             if(id==ID.Player) setVelocity(0,0);
+            firstMove = false;
         }
         else if(id == ID.Icecrushed){
             board.setAtPosition(posX, posY, ID.Empty);
@@ -86,7 +82,7 @@ public class MovingObject {
             velocityX =0;
         }
         else if(id == ID.Ice){
-            if(next == ID.Ice){
+            if(next == ID.Ice && firstMove){
                 board.setAtPosition(posX, posY, ID.Icecrushed);
                 id = ID.Icecrushed;
                 velocityX = 0;
@@ -105,6 +101,10 @@ public class MovingObject {
             if(next == ID.Player){
                 board.EraseP();
             }
+            if(next == ID.Ice || next == ID.Wall){
+                velocityY*=-1;
+                velocityY*=-1;
+            }
         }
         else if(id == ID.Player){
             if(next == ID.Ice) return false;
@@ -118,7 +118,6 @@ public class MovingObject {
             }
         }
 
-        eat = false;
         counter++;
         return true;
 

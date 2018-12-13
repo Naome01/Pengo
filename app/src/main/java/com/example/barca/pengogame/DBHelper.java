@@ -7,11 +7,11 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.view.ViewDebug;
 
 import java.util.ArrayList;
 
 /**
- * Created by radosek on 8/12/2015.
  */
 public class DBHelper extends SQLiteOpenHelper{
 
@@ -19,18 +19,24 @@ public class DBHelper extends SQLiteOpenHelper{
     public static final String PENGO_TABLE_NAME = "users";
     public static final String PENGO_COLUMN_NAME = "name";
     public static final String PENGO_COLUMN_PASS = "pass";
+    public static final String PENGO_COLUMN_SCORE = "score";
+    public static final String PENGO_COLUMN_LEVEL = "level";
+    public static final String PENGO_COLUMN_LIVES = "lives";
+
+
+
 
     public static ArrayList<String> arrayList = new ArrayList<String>();
 
     public DBHelper(Context context)
     {
-        super(context, DATABASE_NAME, null, 1);
+        super(context, DATABASE_NAME, null, 4);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         //db.execSQL("create table contacts " + "(id integer primary key, name text)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + DATABASE_NAME + " (" + PENGO_COLUMN_NAME + "TEXT PRIMARY KEY, " + PENGO_COLUMN_PASS + " TEXT)");
+        db.execSQL("CREATE TABLE " + PENGO_TABLE_NAME + " (" + PENGO_COLUMN_NAME + " TEXT PRIMARY KEY, " + PENGO_COLUMN_PASS + " TEXT, " + PENGO_COLUMN_SCORE + " INTEGER, " + PENGO_COLUMN_LEVEL + " INTEGER, "+ PENGO_COLUMN_LIVES + " INTEGER)");
         //insertUser("Admin", "admin");
     }
 
@@ -46,6 +52,8 @@ public class DBHelper extends SQLiteOpenHelper{
         ContentValues contentValues = new ContentValues();
         contentValues.put(PENGO_COLUMN_NAME, name);
         contentValues.put(PENGO_COLUMN_PASS, pass);
+        contentValues.put(PENGO_COLUMN_SCORE, 0);
+
         db.insert(PENGO_TABLE_NAME, null, contentValues);
         return true;
     }
@@ -54,7 +62,7 @@ public class DBHelper extends SQLiteOpenHelper{
     public String getPass(String login){
         String pass;
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery("select * from users where name = ?" + "", new String[] {login});
+        Cursor res =  db.rawQuery("select pass from users where name = ?" + "", new String[] {login});
         //Cursor res =  db.rawQuery( "select * from contacts LIMIT 1 OFFSET "+id+"", null );
         try {
             res.moveToFirst();
@@ -73,10 +81,55 @@ public class DBHelper extends SQLiteOpenHelper{
 
         }
     }
+    public Integer getHighestScore(String login){
+        Integer score;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery("select score from users where name = ?" + "", new String[] {login});
+        //Cursor res =  db.rawQuery( "select * from contacts LIMIT 1 OFFSET "+id+"", null );
+        try {
+            res.moveToFirst();
+            score = res.getInt(res.getColumnIndexOrThrow(PENGO_COLUMN_SCORE));
+            if (res != null)
+                res.close();
+            Log.d("LoginTest", score.toString());
 
-    public boolean updateContact (Integer id, String name)
+            return score;
+        }
+        catch (Exception e){
+            Log.d("LoginTest", e.getMessage());
+            Log.d("LoginTest", String.valueOf(res.getColumnIndexOrThrow(PENGO_COLUMN_SCORE)));
+
+            return 0;
+
+        }
+    }
+    public Cursor getUserInfo(String name){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor res =  db.rawQuery("select * from users where name = ?" + "", new String[] {name});
+        return res;
+    }
+    public Cursor getScores(){
+
+        SQLiteDatabase db = this.getReadableDatabase();
+       // Cursor res =  db.rawQuery("select * from users order by " + PENGO_COLUMN_SCORE, null);
+        Cursor res =  db.rawQuery("select * from users order by score desc" + "", null);
+        //Cursor res =  db.rawQuery( "select * from contacts LIMIT 1 OFFSET "+id+"", null );
+        return res;
+    }
+    public Cursor getLastState(String name){
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        // Cursor res =  db.rawQuery("select * from users order by " + PENGO_COLUMN_SCORE, null);
+        Cursor res =  db.rawQuery("select * from users where name = ?" + "", new String[]{name});
+        //Cursor res =  db.rawQuery( "select * from contacts LIMIT 1 OFFSET "+id+"", null );
+        return res;
+    }
+
+    public boolean updateUser (String name, int score, int level, int lives)
     {
-        //TODO update zaznam
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE " + PENGO_TABLE_NAME + " SET " + PENGO_COLUMN_LEVEL + " = ? , " + PENGO_COLUMN_LIVES+ " = ? , " + PENGO_COLUMN_SCORE + " = score + ? WHERE " + PENGO_COLUMN_NAME +" = ?" + "", new String[]{String.valueOf(level), String.valueOf(lives), String.valueOf(score), name});
         return true;
     }
 
@@ -100,8 +153,8 @@ public class DBHelper extends SQLiteOpenHelper{
 
     public void removeAll()
     {
-        /*SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(CONTACTS_TABLE_NAME, "1", null);*/
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(PENGO_TABLE_NAME, "1", null);
     }
 
 

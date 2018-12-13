@@ -7,7 +7,9 @@ public enum ID {
     Enemyr(),
     Ice(),
     Icecrushed(),
-    Player()
+    Player(),
+    Win(),
+    Lose()
 
 }
 

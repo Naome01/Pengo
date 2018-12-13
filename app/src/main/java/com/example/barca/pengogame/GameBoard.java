@@ -1,4 +1,6 @@
 package com.example.barca.pengogame;
+import android.media.MediaPlayer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -12,8 +14,8 @@ import java.util.Random;
 public class GameBoard {
 
     //Rozměry herní desky
-    private int xSize = 20;
-    private int ySize = 13;
+    private int xSize = 15;
+    private int ySize = 10;
     private int playerX = 10;
     private int playerY = 5;
     private ID[][] board = new ID[xSize][ySize];
@@ -39,13 +41,17 @@ public class GameBoard {
             }
         }
         int rX, rY;
-        for(int i = 0; i< level; i++ ) {
+        for(int i = 0; i< level; ) {
 
             rX = r.nextInt(xSize-2)+1;
             rY = r.nextInt(ySize-2)+1;
 
-            board[rX][rY] = ID.Enemyl;
-            this.numOfEnemy++;
+            if(board[rX] [rY] != ID.Player || board[rX] [rY] != ID.Enemyl ) {
+                board[rX][rY] = ID.Enemyl;
+                this.numOfEnemy++;
+                i++;
+            }
+
         }
         //board[xSize-2][ySize-2] = ID.Player;
         board[playerX][playerY] = ID.Player;

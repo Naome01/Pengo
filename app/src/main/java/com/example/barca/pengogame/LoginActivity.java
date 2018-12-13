@@ -3,7 +3,9 @@ package com.example.barca.pengogame;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -64,11 +66,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
     private DBHelper PengoDb;
+    private SharedPreferences mySharePref;
+    private SharedPreferences.Editor myShareEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
@@ -93,9 +99,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
+        mySharePref = getSharedPreferences(getString(R.string.shared_pref) , Context.MODE_PRIVATE);
+
+        String login = mySharePref.getString("Login", "");
+        String pass = mySharePref.getString("Pass", "");
+
+        mPasswordView.setText(pass);
+        mEmailView.setText(login);
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         PengoDb = new DBHelper(this.getBaseContext());
+        //PengoDb.removeAll();
     }
 
     private void populateAutoComplete() {
@@ -310,23 +325,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            String pass = PengoDb.getPass(mEmail);
-            if(pass == "0"){
 
+            String pass = PengoDb.getPass(mEmail);
+
+            if(pass.equals(mPassword)){
+                Log.d("LoginTest", "logged");
+                return true;
+            }
+            if(pass == "0"){
                 //register new and login
                 PengoDb.insertUser(mEmail, mPassword);
                 Log.d("LoginTest", "inserted");
 
                 return true;
             }
-            if(pass == mPassword){
-                Log.d("LoginTest", "logged");
-                return true;
-            }
+
             else {
                 Log.d("LoginTest", pass);
                 Log.d("LoginTest", mPassword);
-
                 return false;
             }
         }
@@ -337,8 +353,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
+
                 Intent MainActivity = new Intent(LoginActivity.this, MainActivity.class);
                 MainActivity.putExtra("Login", mEmail);
+                MainActivity.putExtra("Score", PengoDb.getHighestScore(mEmail));
+
                 LoginActivity.this.startActivity(MainActivity);
                 finish();
 

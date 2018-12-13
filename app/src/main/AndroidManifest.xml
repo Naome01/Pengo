@@ -21,19 +21,23 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity   android:name=".LoginActivity" >
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity">
-
-        </activity>
-        <activity android:name=".GameView" />
-        <activity android:name=".Game" />
-
+        <activity android:name=".MainActivity" />
+        <activity android:name=".GameView"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".Game"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".ScoresView"
+            android:parentActivityName=".MainActivity"
+        />
+        <activity android:name=".List" />
+        <activity android:name=".GameEnd"></activity>
     </application>
 
 </manifest>
