@@ -20,7 +20,6 @@
         android:layout_marginBottom="41dp"
         android:alpha="1.0"
         android:background="@drawable/ice"
-        android:onClick="OnStartClick"
         android:singleLine="true"
         android:text="Start Game"
         android:textColor="@android:color/white"
@@ -31,7 +30,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.29" />
+        app:layout_constraintVertical_bias="0.761" />
 
     <Button
         android:id="@+id/scores"
@@ -45,7 +44,6 @@
         android:layout_marginBottom="41dp"
         android:alpha="1.0"
         android:background="@drawable/ice"
-        android:onClick="OnScoreClick"
         android:singleLine="true"
         android:text="Score board"
         android:textColor="@android:color/white"
@@ -56,7 +54,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.467" />
+        app:layout_constraintVertical_bias="0.937" />
 
     <TextView
         android:id="@+id/loginText"

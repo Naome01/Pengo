@@ -28,7 +28,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity" />
+        <activity android:name=".MainActivity"
+            android:launchMode="singleTop"/>
         <activity android:name=".GameView"
             android:parentActivityName=".MainActivity"/>
         <activity android:name=".Game"
@@ -37,7 +38,6 @@
             android:parentActivityName=".MainActivity"
         />
         <activity android:name=".List" />
-        <activity android:name=".GameEnd"></activity>
     </application>
 
 </manifest>

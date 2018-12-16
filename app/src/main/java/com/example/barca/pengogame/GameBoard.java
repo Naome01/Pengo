@@ -1,5 +1,7 @@
 package com.example.barca.pengogame;
+import android.content.Intent;
 import android.media.MediaPlayer;
+import android.support.v4.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +20,7 @@ public class GameBoard {
     private int ySize = 10;
     private int playerX = 10;
     private int playerY = 5;
-    private ID[][] board = new ID[xSize][ySize];
+    private ID[][] board;
     //Počet hráčů (1 nebo 0)
     private int numOfP = 1;
     //Počet Enemy
@@ -29,24 +31,37 @@ public class GameBoard {
      */
     public GameBoard(int level)
     {
+        if(level > 6){
+            xSize = 18;
+            ySize = 15;
+        }
+        board = new ID[xSize][ySize];
         Random r = new Random();
         for(int i = 0; i < xSize; i++)
         {
             for (int j = 0; j < ySize; j++)
             {
                 if(i==0 || i== xSize-1) board[i][j] = ID.Wall;
+
                 else if (j == 0 || j == ySize-1) board[i][j] = ID.Wall;
                else  if (r.nextInt(3) == 1) board[i][j] = ID.Ice;
                 else board[i][j] = ID.Empty;
             }
         }
+        board[playerX][playerY] = ID.Player;
+        board[playerX][playerY+1] = ID.Ice;
+        board[playerX][playerY-1] = ID.Ice;
+        board[playerX+1][playerY] = ID.Ice;
+        board[playerX-1][playerY] = ID.Ice;
         int rX, rY;
-        for(int i = 0; i< level; ) {
+        int enemy = level;
+        if(level >6) enemy = enemy/2+2;
+        for(int i = 0; i< enemy; ) {
 
             rX = r.nextInt(xSize-2)+1;
             rY = r.nextInt(ySize-2)+1;
-
-            if(board[rX] [rY] != ID.Player || board[rX] [rY] != ID.Enemyl ) {
+            if(rX==playerX+1 || rX == playerX -1  || rY == playerY -1 || rY == playerY +1 ){}
+            else if(board[rX] [rY] != ID.Player || board[rX] [rY] != ID.Enemyl ) {
                 board[rX][rY] = ID.Enemyl;
                 this.numOfEnemy++;
                 i++;
@@ -54,7 +69,6 @@ public class GameBoard {
 
         }
         //board[xSize-2][ySize-2] = ID.Player;
-        board[playerX][playerY] = ID.Player;
     }
     /*******************************************************************************
      * @return xSize
@@ -110,6 +124,7 @@ public class GameBoard {
      */
     public void EnemyDead() {
         this.numOfEnemy --;
+
     }
 
     /*******************************************************************************

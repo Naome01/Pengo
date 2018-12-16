@@ -1,5 +1,7 @@
 package com.example.barca.pengogame;
 
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.util.Random;
@@ -58,8 +60,16 @@ public class MovingObject {
             return true;
         }
         if(id == ID.Enemyl || id == ID.Enemyr) {
-            if(counter != 0 && counter%6 == 0)
+            if(counter != 0 && counter%8 == 0)
             RandomVelocity();
+            if(velocityY > 0) {
+                board.setAtPosition(posX, posY, ID.Enemyr);
+                id = ID.Enemyr;
+            }
+            else {
+                board.setAtPosition(posX, posY, ID.Enemyl);
+                id = ID.Enemyl;
+            }
             //Log.d("Enemy", "enemyRandom ");
 
         }
@@ -77,6 +87,7 @@ public class MovingObject {
         }
         else if(id == ID.Icecrushed){
             board.setAtPosition(posX, posY, ID.Empty);
+            game.RemoveObject(posX, posY, ID.Icecrushed);
             id = ID.Empty;
             velocityY = 0;
             velocityX =0;

@@ -3,9 +3,11 @@ package com.example.barca.pengogame;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -20,8 +22,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,7 +47,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     private ArrayList<MovingObject> objects;
     Bitmap[] bmp;
     boolean updating = true;
-
+    boolean pause = false;
     int lx = 20;
     int ly = 13;
     GameBoard board;
@@ -60,7 +64,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     float playerWorldY;
     boolean firstDown = false;
 
-    DBHelper PendoDB;
     GameHolder gameHolder;
 
 
@@ -82,11 +85,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         super(context, attrs, defStyleAttr);
         gameHolder= new GameHolder(context);
 
+
         init();
     }
 
     void init() {
         Log.d("TestLoop", "Init");
+
 
         // Make Game Surface focusable so it can handle events. .
         this.setFocusable(true);
@@ -96,7 +101,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
 
     }
     public void update()  {
-    if(updating) {
+    if(updating && !pause) {
         int tmpNum = board.getNumOfEnemy();
         for (int i = 1; i < objects.size(); i++) {
             objects.get(i).Move(this, board);
@@ -111,19 +116,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
 
         playerY = board.getPlayerY();
         playerX = board.getPlayerX();
-        if(tmpNum != board.getNumOfEnemy()){
-            MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), R.raw.pickup);
-            mediaPlayer.start(); // no need to call prepare(); create() does that for you
 
-        }
         enemyTex.setText("x " + board.getNumOfEnemy());
         int tmp = board.checkBoard();
         if (tmp == -1) {
             Log.d("Win or Over", "GAME OVER");
             gameHolder.SetPref(gameHolder.level, gameHolder.lives - 1);
-
-            /*Intent intent = new Intent("kill");
-            LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);*/
             lose();
             //
         } else if (tmp == 1) {
@@ -138,18 +136,27 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     }
     }
     public void win(){
+        MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), R.raw.win);
+        mediaPlayer.start();
         board.setAtPosition(0,0, ID.Win);
         updating = false;
 
     }
     public void lose(){
+        MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), R.raw.lose);
+        mediaPlayer.start();
         board.setAtPosition(0,0, ID.Lose);
         updating = false;
 
     }
     public  boolean RemoveObject(int posX, int posY, ID id){
+        if(id == ID.Enemyl){
+            MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), R.raw.pickup);
+            mediaPlayer.start(); // no need to call prepare(); create() does that for you
+        }
+        else if(id == ID.Icecrushed) EatIce();
         for(int i=0; i<objects.size(); i++){
-            if(objects.get(i).getPosX() == posX && objects.get(i).getPosY() == posY && objects.get(i).getID() == id){
+            if(objects.get(i).getPosX() == posX && objects.get(i).getPosY() == posY){
                 objects.remove(i);
                 return true;
             }
@@ -158,6 +165,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     }
 
     public  boolean RemoveObject(MovingObject object){
+
             objects.remove(object);
 
         return false;
@@ -166,7 +174,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     @Override
     public void draw(Canvas canvas)  {
         super.draw(canvas);
-        if(updating){
+        if(board.getAtPosition(0,0) != ID.Lose && board.getAtPosition(0,0)!= ID.Win){
         width = canvas.getWidth() /ly;
         height = canvas.getHeight() /lx;
         for (int i = 0; i < lx; i++) {
@@ -278,6 +286,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+
+
         bmp = new Bitmap[9];
 
         bmp[0] = BitmapFactory.decodeResource(getResources(), R.drawable.empty);
@@ -310,12 +320,34 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         levelTex.setText("Level: " + gameHolder.level);
         livesTex.setText(gameHolder.lives + " x");
 
+
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
         this.gameThread.start();
 
+        Button buttonMenu= ((Activity)getContext()).findViewById(R.id.button3);
+        buttonMenu.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                OnMenuClicked();
+            }
+        });
+        Button buttonReset= ((Activity)getContext()).findViewById(R.id.button4);
+        buttonReset.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                OnResetClicked();
+            }
+        });
+    }
+   public void EnemyDead() {
+            MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), R.raw.pickup);
+            mediaPlayer.start();
+        }
+    public void EatIce(){
+        MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), R.raw.bite);
+        mediaPlayer.start();
     }
     public void newGame(){
+        //updating = false;
         board = new GameBoard(gameHolder.level);
         lx = board.getxSize();
         ly = board.getySize();
@@ -348,34 +380,29 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
             }
             retry= true;
         }
-    }
-    public Dialog CreateDialog(boolean win){
-        // 1. Instantiate an <code><a href="/reference/android/app/AlertDialog.Builder.html">AlertDialog.Builder</a></code> with its constructor
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
-        builder.setPositiveButton("MENU", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked OK button
-            }});
-        if(win) {
 
-            builder.setNegativeButton("NEXT LEVEL", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                    // User cancelled the dialog
-                }
-            });
-            builder.setMessage("Level: " + gameHolder.level)
-                    .setTitle("YOU WIN");
+    }
+
+    public void OnMenuClicked(){
+        pause = !pause;
+        if(pause){
+            Button button= ((Activity)getContext()).findViewById(R.id.button3);
+            button.setText("RESUME");
         }
-        else {
-            builder.setNegativeButton("TRY AGAIN", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // User cancelled the dialog
-                }
-            });
-            builder.setMessage("Level: " + gameHolder.level)
-                    .setTitle("YOU LOSE");
+        else{
+            Button button= ((Activity)getContext()).findViewById(R.id.button3);
+            button.setText("PAUSE");
         }
-        Log.d("Dialog", "Created");
-        return builder.create();
+        // updating = false;
+       // gameHolder.SetPref(gameHolder.level, gameHolder.lives - 1);
+
+       // ((Activity) getContext()).finish();
+       // surfaceDestroyed(getHolder());
+    }
+    public void OnResetClicked(){
+        //updating = false;
+        gameHolder.SetPref(gameHolder.level, gameHolder.lives - 1);
+        newGame();
+        //newGame();
     }
 }

@@ -33,7 +33,7 @@ public class GameHolder extends Activity {
             db.updateUser(User, 10, lev, liv);
 
         }
-        else if (tmpLives==0){
+        else if (tmpLives<=0){
             db.updateUser(User, -15, lev, 4);
             tmpLives = 4;
         }

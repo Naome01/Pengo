@@ -14,10 +14,7 @@ public class Game extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LocalBroadcastManager.getInstance(this).registerReceiver(new OverHandler(),
-                new IntentFilter("kill"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(new WinHandler(),
-                new IntentFilter("win"));
-
+                new IntentFilter("Menu"));
 
         super.onCreate(savedInstanceState);
        // this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -34,12 +31,7 @@ public class Game extends Activity {
 
     public class OverHandler extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            killActivity();
+            //finish();
         }}
-    public class WinHandler extends BroadcastReceiver {
-            public void onReceive(Context context, Intent intent) {
-                killActivity();
-            }
 
-    }
 }

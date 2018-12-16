@@ -10,7 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+
+import static java.security.AccessController.getContext;
 
 public class MainActivity extends Activity {
 
@@ -30,7 +33,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mySharePref = getSharedPreferences(getApplicationContext().getString(R.string.shared_pref) , getApplicationContext().MODE_PRIVATE);
-
+        setListeners();
         String prefUser = mySharePref.getString("Login", "");
 
         try{
@@ -73,14 +76,35 @@ public class MainActivity extends Activity {
 
             }
     }
-    public void OnStartClick(View view){
+    public void OnStartClick(){
         Intent Game = new Intent(MainActivity.this, Game.class);
         MainActivity.this.startActivity(Game);
     }
-    public void OnScoreClick(View view){
+    public void OnScoreClick(){
         Intent ScoresView = new Intent(MainActivity.this, ScoresView.class);
         ScoresView.putExtra("Login", user);
         MainActivity.this.startActivity(ScoresView);
+    }
+
+    public void setListeners(){
+        Button buttonStart= findViewById(R.id.start);
+        buttonStart.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                OnStartClick();
+            }
+        });
+        Button buttonScores= findViewById(R.id.scores);
+        buttonScores.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                OnScoreClick();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        setListeners();
     }
 
 }
