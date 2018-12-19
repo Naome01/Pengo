@@ -23,7 +23,9 @@ public class GameHolder extends Activity {
 
         User = mySharePref.getString("Login", "");
         level = mySharePref.getInt("Level", 1);
+        if(level == 0) level =1;
         lives = mySharePref.getInt("Lives", 4);
+
        // Log.d("GameHolder", User + level + lives);
 
     }
